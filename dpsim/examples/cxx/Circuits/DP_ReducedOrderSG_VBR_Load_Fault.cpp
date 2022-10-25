@@ -1,6 +1,6 @@
 #include <DPsim.h>
+#include <dpsim-models/Factory.h>
 #include "../Examples.h"
-#include "../GeneratorFactory.h"
 
 using namespace DPsim;
 using namespace CPS;
@@ -13,7 +13,7 @@ const Examples::Grids::SMIB::ScenarioConfig3 GridParams;
 const Examples::Components::SynchronousGeneratorKundur::MachineParameters syngenKundur;
 
 // Excitation system
-const Examples::Components::ExcitationSystemEremia::Parameters excitationEremia;
+const Base::ExciterParameters excitationEremia = Examples::Components::Exciter::getExciterEremia();
 
 // Steam Turbine
 const Examples::Components::TurbineGovernor::SteamTurbine dSteamTurbine;
@@ -26,6 +26,10 @@ const Examples::Components::TurbineGovernor::HydroTurbine dHydroTurbine;
 const Examples::Components::TurbineGovernor::HydroTurbineGovernor dHydroGovernor;
 
 int main(int argc, char* argv[]) {
+
+	// initiaize factories
+	ExciterFactory::registerExciters();
+	SynchronGeneratorFactory::DP::Ph1::registerSynchronGenerators();
 
 	//Simultion parameters
 	Real switchClosed = GridParams.SwitchClosed;
@@ -86,7 +90,7 @@ int main(int argc, char* argv[]) {
 	auto n1DP = SimNode<Complex>::make("n1DP", PhaseType::Single, initVoltN1);
 
 	// Synchronous generator
-	auto genDP = GeneratorFactory::createGenDP(SGModel, "SynGen", logLevel);
+	auto genDP = Factory<DP::Ph1::ReducedOrderSynchronGeneratorVBR>::get().create(SGModel, "SynGen", logLevel);
 	genDP->setOperationalParametersPerUnit(
 			syngenKundur.nomPower, syngenKundur.nomVoltage,
 			syngenKundur.nomFreq, H,
@@ -99,13 +103,10 @@ int main(int argc, char* argv[]) {
 	genDP->setModelAsNortonSource(true);
 
 	// Exciter
-	std::shared_ptr<Signal::Exciter> exciterDP = nullptr;
+	std::shared_ptr<Base::Exciter> exciterDP = nullptr;
 	if (withExciter) {
-		exciterDP = Signal::Exciter::make("SynGen_Exciter", logLevel);
-		exciterDP->setParameters(excitationEremia.Ta, excitationEremia.Ka,
-								 excitationEremia.Te, excitationEremia.Ke,
-								 excitationEremia.Tf, excitationEremia.Kf,
-								 excitationEremia.Tr);
+		exciterDP = Factory<Base::Exciter>::get().create("DC1Simp", "Exciter", logLevel);
+		exciterDP->setParameters(excitationEremia);
 		genDP->addExciter(exciterDP);
 	}
 
