@@ -161,15 +161,15 @@ int main(int argc, char* argv[]) {
 
 	// Logging
 	auto loggerDP = DataLogger::make(simNameDP, true, logDownSampling);
-	loggerDP->logAttribute("v_gen", 	 genDP->attribute("v_intf"));
-    loggerDP->logAttribute("i_gen", 	 genDP->attribute("i_intf"));
-    loggerDP->logAttribute("Te", 	 	genDP->attribute("Te"));
-    loggerDP->logAttribute("delta", 	 genDP->attribute("delta"));
-    loggerDP->logAttribute("w_r", 		 genDP->attribute("w_r"));
-	loggerDP->logAttribute("Vdq0", 		 genDP->attribute("Vdq0"));
-	loggerDP->logAttribute("Idq0", 		 genDP->attribute("Idq0"));
-	loggerDP->logAttribute("Ef",		genDP->attribute("Ef"));
-	loggerDP->logAttribute("Tm", 		genDP->attribute("Tm"));
+	loggerDP->logAttribute("v_gen",	genDP->attribute("v_intf"));
+    loggerDP->logAttribute("i_gen",	genDP->attribute("i_intf"));
+    loggerDP->logAttribute("Te",	genDP->attribute("Te"));
+    loggerDP->logAttribute("delta",	genDP->attribute("delta"));
+    loggerDP->logAttribute("w_r",	genDP->attribute("w_r"));
+	loggerDP->logAttribute("Vdq0",	genDP->attribute("Vdq0"));
+	loggerDP->logAttribute("Idq0",	genDP->attribute("Idq0"));
+	loggerDP->logAttribute("Ef",	genDP->attribute("Ef"));
+	loggerDP->logAttribute("Tm", 	genDP->attribute("Tm"));
 
 	Simulation simDP(simNameDP, logLevel);
 	simDP.doInitFromNodesAndTerminals(true);
