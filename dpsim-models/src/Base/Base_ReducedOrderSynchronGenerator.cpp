@@ -559,7 +559,7 @@ void Base::ReducedOrderSynchronGenerator<Real>::mnaCompPreStep(Real time, Int ti
 		mVpss = mPSS->step(**mOmMech, **mElecTorque, (**mVdq)(0,0), (**mVdq)(1,0));
 	if (mHasExciter) {
 		mEf_prev = **mEf;
-		**mEf = mExciter->step((**mVdq)(0,0), (**mVdq)(1,0), mTimeStep, mVpss);		
+		**mEf = mExciter->step((**mVdq0)(0,0), (**mVdq0)(1,0), mTimeStep, mVpss);	
 	}
 
 	stepInPerUnit();
@@ -617,7 +617,8 @@ void Base::ReducedOrderSynchronGenerator<VarType>::addPSS(Real Kp, Real Kv, Real
 	Real T3, Real T4, Real Vs_max, Real Vs_min, Real Tw, Real dt) {
 	
 	if (!mHasExciter) {
-		this->mSLog->error("PSS can not be used without Exciter! PSS will be ignored!");
+		std::cerr << "PSS can not be used without Exciter! PSS will be ignored!" << std::endl;
+		SPDLOG_LOGGER_ERROR(this->mSLog, "PSS can not be used without Exciter! PSS will be ignored!");
 		return;
 	}
 
@@ -631,7 +632,8 @@ void Base::ReducedOrderSynchronGenerator<VarType>::addPSS(
 	std::shared_ptr<Signal::PSS1A> PSS) {
 	
 	if (!mHasExciter) {
-		this->mSLog->error("PSS can not be used without Exciter! PSS will be ignored!");
+		std::cerr << "PSS can not be used without Exciter! PSS will be ignored!" << std::endl;
+		SPDLOG_LOGGER_ERROR(this->mSLog, "PSS can not be used without Exciter! PSS will be ignored!");
 		return;
 	}
 
