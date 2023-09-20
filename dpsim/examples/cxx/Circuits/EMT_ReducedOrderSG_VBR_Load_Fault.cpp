@@ -15,8 +15,11 @@ const Examples::Components::SynchronousGeneratorKundur::MachineParameters syngen
 // Excitation system
 const Examples::Components::ExcitationSystemEremia::Parameters excitationEremia;
 
-// Turbine Goverour
-const Examples::Components::TurbineGovernor::TurbineGovernorPSAT1 turbineGovernor;
+// Steam Turbine
+const Examples::Components::TurbineGovernor::SteamTurbine dSteamTurbine;
+
+// Steam Turbine Governor
+Examples::Components::TurbineGovernor::SteamTurbineGovernor dSteamGovernor;
 
 int main(int argc, char* argv[]) {
 
@@ -24,12 +27,12 @@ int main(int argc, char* argv[]) {
 	Real switchClosed = GridParams.SwitchClosed;
 	Real switchOpen = GridParams.SwitchOpen;
 	Real startTimeFault = 1.0;
-	Real endTimeFault   = 1.1;
-	Real finalTime = 5;
+	Real endTimeFault   = 4;
+	Real finalTime = 20;
 	Real timeStep = 1e-3;
 	Real H = syngenKundur.H;
-	bool withExciter = false;
-	bool withTurbineGovernor = false;
+	bool withExciter = true;
+	bool withTurbineGovernor = true;
 	std::string SGModel = "4";
 	std::string stepSize_str = "";
 	std::string inertia_str = "";
@@ -97,14 +100,22 @@ int main(int argc, char* argv[]) {
 		genEMT->addExciter(exciterEMT);
 	}
 
-	// Turbine Governor
-	std::shared_ptr<Signal::TurbineGovernorType1> turbineGovernorEMT = nullptr;
+	// Steam Turbine
+	std::shared_ptr<Signal::SteamTurbine> steamTurbine = nullptr;
 	if (withTurbineGovernor) {
-		turbineGovernorEMT = Signal::TurbineGovernorType1::make("SynGen_TurbineGovernor", logLevel);
-		turbineGovernorEMT->setParameters(turbineGovernor.T3, turbineGovernor.T4,
-			turbineGovernor.T5, turbineGovernor.Tc, turbineGovernor.Ts, turbineGovernor.R,
-			turbineGovernor.Tmin, turbineGovernor.Tmax, turbineGovernor.OmegaRef);
-		genEMT->addGovernor(turbineGovernorEMT);
+		steamTurbine = Signal::SteamTurbine::make("SynGen_SteamTurbine", logLevel);
+		steamTurbine->setParameters(dSteamTurbine.Fhp, dSteamTurbine.Fip,dSteamTurbine.Flp,
+									dSteamTurbine.Tch, dSteamTurbine.Tco, dSteamTurbine.Trh);
+		genEMT->addSteamTurbine(steamTurbine);
+	}
+
+	// Steam Turbine Governor
+	std::shared_ptr<Signal::SteamTurbineGovernor> steamTurbineGovernor = nullptr;
+	if (withTurbineGovernor) {
+		steamTurbineGovernor = Signal::SteamTurbineGovernor::make("SynGen_SteamTurbineGovernor", logLevel);
+		steamTurbineGovernor->setParameters(dSteamGovernor.OmRef, dSteamGovernor.R, dSteamGovernor.T2, dSteamGovernor.T3,  
+								dSteamGovernor.delPmax, dSteamGovernor.delPmin, dSteamGovernor.Pmax, dSteamGovernor.Pmin);
+		genEMT->addSteamTurbineGovernor(steamTurbineGovernor);
 	}
 
 	// Load
@@ -137,16 +148,8 @@ int main(int argc, char* argv[]) {
     loggerEMT->logAttribute("w_r", 		genEMT->attribute("w_r"));
 	loggerEMT->logAttribute("Vdq0", 	genEMT->attribute("Vdq0"));
 	loggerEMT->logAttribute("Idq0", 	genEMT->attribute("Idq0"));
-
-	// Exciter
-	if (withExciter) {
-		loggerEMT->logAttribute("Ef",   exciterEMT->attribute("Ef"));
-	}
-
-	// Turbine Governor
-	if (withTurbineGovernor) {
-		loggerEMT->logAttribute("Tm", turbineGovernorEMT->attribute("Tm"));
-	}
+	loggerEMT->logAttribute("Ef",   	genEMT->attribute("Ef"));
+	loggerEMT->logAttribute("Tm", 		genEMT->attribute("Tm"));
 
 	Simulation simEMT(simNameEMT, logLevel);
 	simEMT.doInitFromNodesAndTerminals(true);

@@ -11,7 +11,11 @@
 #include <dpsim-models/MNASimPowerComp.h>
 #include <dpsim-models/Solver/MNAInterface.h>
 #include <dpsim-models/Signal/Exciter.h>
-#include <dpsim-models/Signal/TurbineGovernorType1.h>
+//#include <dpsim-models/Signal/TurbineGovernorType1.h>
+#include <dpsim-models/Signal/SteamTurbine.h>
+#include <dpsim-models/Signal/SteamTurbineGovernor.h>
+#include <dpsim-models/Signal/HydroTurbine.h>
+#include <dpsim-models/Signal/HydroTurbineGovernor.h>
 
 namespace CPS {
 namespace Base {
@@ -82,10 +86,25 @@ namespace Base {
 			void setInitialValues(Complex initComplexElectricalPower,
 				Real initMechanicalPower, Complex initTerminalVoltage);
 
-			/// Add governor and turbine
-			void addGovernor(Real T3, Real T4, Real T5, Real Tc,
-				Real Ts, Real R, Real Pmin, Real Pmax, Real OmRef, Real TmRef);
-			void addGovernor(std::shared_ptr<Signal::TurbineGovernorType1> turbineGovernor);
+			//Add Steam Turbine and Governor separately
+			//it is adviced to choose Pminit of turbine to mPref of the Governor by f_ref=f_n (50Hz/60Hz)
+			void addSteamTurbine(Real Fhp, Real Fip, Real Flp, Real Tch, Real Trh, Real Tco, Real Pminit);
+			void addSteamTurbine(std::shared_ptr<Signal::SteamTurbine> steamTurbine);
+			//Add Steam Turbine Governor
+			void addSteamTurbineGovernor(Real OmRef, Real Pref, Real R, Real T2, Real T3, 
+										Real dPmax, Real dPmin, Real Pmax, Real Pmin);
+			void addSteamTurbineGovernor(std::shared_ptr<Signal::SteamTurbineGovernor> steamTurbineGovernor);
+
+			//Add Hydro Turbine and Governor separately
+			//it is adviced to choose Pminit of turbine to mPref of the Governor by f_ref=f_n (50Hz/60Hz)
+			void addHydroTurbine(Real Tw, Real Pminit);
+			void addHydroTurbine(std::shared_ptr<Signal::HydroTurbine> HydroTurbine);
+			//Add Hydrp Turbine Governor
+			void addHydroTurbineGovernor(Real OmRef, Real Pref, Real R, Real T1, Real T2, Real T3,
+                                         Real Pmax, Real Pmin);
+			void addHydroTurbineGovernor(std::shared_ptr<Signal::HydroTurbineGovernor> hydroTurbineGovernor);
+
+
 			/// Add voltage regulator and exciter
 			void addExciter(Real Ta, Real Ka, Real Te, Real Ke,
 				Real Tf, Real Kf, Real Tr);
@@ -245,12 +264,29 @@ namespace Base {
 			Bool mInitialValuesSet = false;
 
 			// #### Controllers ####
+			//Determines if generator has a turbine
+			Bool mHasTurbine =false;
+			//Determines if turbine has a governor
+			Bool mHasGovernor =false;
 			/// Determines if Turbine and Governor are activated
 			Bool mHasTurbineGovernor = false;
 			/// Determines if Exciter is activated
 			Bool mHasExciter = false;
-			/// Signal component modelling governor control and steam turbine
-			std::shared_ptr<Signal::TurbineGovernorType1> mTurbineGovernor;
+			/// Is it a steam ower plant?
+			Bool mSteam = false;
+			/// Is it a hydro power plant?
+			Bool mHydro = false;
+
+			///Signal component modelling Steam Turbine
+			std::shared_ptr<Signal::SteamTurbine> mSteamTurbine;
+			/// Signal component modelling steam governor controll
+			std::shared_ptr<Signal::SteamTurbineGovernor> mSteamTurbineGovernor;
+			
+			///Signal component modelling Hydro Turbine
+			std::shared_ptr<Signal::HydroTurbine> mHydroTurbine;
+			/// Signal component modelling hydro governor controll
+			std::shared_ptr<Signal::HydroTurbineGovernor> mHydroTurbineGovernor;
+			
 			/// Signal component modelling voltage regulator and exciter
 			std::shared_ptr<Signal::Exciter> mExciter;
 
