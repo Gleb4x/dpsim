@@ -13,9 +13,11 @@ namespace Signal {
     private:
     // ### Steam turbine governor parameters, where Omega_ref,  P_ref are constant and T_1=0 ###
     //Controller is K(1+sT_2)
-    //Droop, the value 1/K in the controller K(1+sT_2)
+    //Droop, the value 1/K in the controller K(1+sT_2)/(1+sT_1)
     Real mR;
-    //T_2 related to the differentiator in the controlle K(1+sT_2)
+    //T_1 related to the differentiator in the controlle K(1+sT_2)/(1+sT_1)
+    Real mT1;
+    //T_2 related to the differentiator in the controlle K(1+sT_2)/(1+sT_1)
     Real mT2;
     //Time constant T_3 of the actuator in the Governor
     Real mT3;
@@ -37,7 +39,7 @@ namespace Signal {
     Real mPref;
 
     // ### Variables at time step k-1 ###
-    Real mDelOm_prev;    
+    Real mDelOm_prev;  
 
     // ### Variables at time step k ###
     // Delta Omega = Omega_ref-Omega_meas at k
@@ -46,10 +48,13 @@ namespace Signal {
     Real mDelPgv;
     // The outpur of the Governor at k
     Real mPgv;
+    Real mP1;
+    Real mP;
 
     // ### Variables at time step k+1 ###
     // The outpur of the PT1 with limiters at k+1 (Governor output)
     Real mPgv_next;
+    Real mP1_next;
 
     public:
     ///
@@ -59,7 +64,7 @@ namespace Signal {
 	SteamTurbineGovernor(const String & name, CPS::Logger::Level logLevel);
 
 	/// Sets Parameters of the turbine
-	void setParameters(Real OmRef, Real R, Real T2, Real T3, 
+	void setParameters(Real OmRef, Real R, Real T1, Real T2, Real T3, 
                         Real dPmax, Real dPmin, Real Pmax, Real Pmin);
 
 	/// Initialises the initial state of the turbine
