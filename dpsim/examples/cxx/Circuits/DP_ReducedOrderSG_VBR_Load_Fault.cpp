@@ -28,6 +28,9 @@ const Examples::Components::TurbineGovernor::HydroTurbine dHydroTurbine;
 // Hydro Turbine Governor
 const Examples::Components::TurbineGovernor::HydroTurbineGovernor dHydroGovernor;
 
+//Turbine+Governor Type1 Parameter
+const Examples::Components::TurbineGovernor::TurbineGovernorPSAT1 turbineGovernor;
+
 int main(int argc, char* argv[]) {
 
 	// initiaize factories
@@ -42,19 +45,14 @@ int main(int argc, char* argv[]) {
 	Real finalTime = 60;
 	Real timeStep = 1e-3;
 	Real H = syngenKundur.H;
-<<<<<<< HEAD
 	bool withExciter = true;
+	bool withPSS=false;
 	bool withTurbineGovernor = true;
-	bool hydro = true;
-	bool steam =false;
-	if ( hydro==steam)
-	withTurbineGovernor=false;
+	// Only one of three bools can be true
+	bool hydro = false;
+	bool steam =true;
+	bool type1=false;
 
-=======
-	bool withPSS = false;
-	bool withExciter = false;
-	bool withTurbineGovernor = false;
->>>>>>> 6f715810 (fix some errors)
 	std::string SGModel = "4";
 	std::string stepSize_str = "";
 	std::string inertia_str = "";
@@ -143,8 +141,8 @@ int main(int argc, char* argv[]) {
 
 				std::shared_ptr<Signal::SteamTurbineGovernor> steamTurbineGovernor = nullptr;
 				steamTurbineGovernor = Signal::SteamTurbineGovernor::make("SynGen_SteamTurbineGovernor", logLevel);
-				steamTurbineGovernor->setParameters(dSteamGovernor.OmRef, dSteamGovernor.R, dSteamGovernor.T2, dSteamGovernor.T3,  
-										dSteamGovernor.delPmax, dSteamGovernor.delPmin, dSteamGovernor.Pmax, dSteamGovernor.Pmin);
+				steamTurbineGovernor->setParameters(dSteamGovernor.OmRef, dSteamGovernor.R, dSteamGovernor.T1, dSteamGovernor.T2, dSteamGovernor.T3,  
+													dSteamGovernor.delPmax, dSteamGovernor.delPmin, dSteamGovernor.Pmax, dSteamGovernor.Pmin);
 				genDP->addSteamTurbineGovernor(steamTurbineGovernor);
 		}
 
@@ -158,6 +156,15 @@ int main(int argc, char* argv[]) {
 			hydroTurbineGovernor = Signal::HydroTurbineGovernor::make("SynGen_HydroTurbineGovernor", logLevel);
 			hydroTurbineGovernor->setParameters(dHydroGovernor.OmRef, dHydroGovernor.R, dHydroGovernor.T1, dHydroGovernor.T2, dHydroGovernor.T3, dHydroGovernor.Pmax, dHydroGovernor.Pmin);
 			genDP->addHydroTurbineGovernor(hydroTurbineGovernor);
+		}
+
+		if(type1){
+		std::shared_ptr<Signal::TurbineGovernorType1> turbineGovernorDP = nullptr;
+		turbineGovernorDP = Signal::TurbineGovernorType1::make("SynGen_TurbineGovernor", logLevel);
+		turbineGovernorDP->setParameters(turbineGovernor.T3, turbineGovernor.T4,
+			turbineGovernor.T5, turbineGovernor.Tc, turbineGovernor.Ts, turbineGovernor.R,
+			turbineGovernor.Tmin, turbineGovernor.Tmax, turbineGovernor.OmegaRef);
+		genDP->addGovernor(turbineGovernorDP);
 		}
 	}
 

@@ -14,7 +14,7 @@
 #include <dpsim-models/Signal/ExciterDC1.h>
 #include <dpsim-models/Signal/ExciterDC1Simp.h>
 #include <dpsim-models/Signal/PSS1A.h>
-//#include <dpsim-models/Signal/TurbineGovernorType1.h>
+#include <dpsim-models/Signal/TurbineGovernorType1.h>
 #include <dpsim-models/Signal/SteamTurbine.h>
 #include <dpsim-models/Signal/SteamTurbineGovernor.h>
 #include <dpsim-models/Signal/HydroTurbine.h>
@@ -94,7 +94,7 @@ namespace Base {
 			void addSteamTurbine(Real Fhp, Real Fip, Real Flp, Real Tch, Real Trh, Real Tco, Real Pminit);
 			void addSteamTurbine(std::shared_ptr<Signal::SteamTurbine> steamTurbine);
 			// Add Steam Turbine Governor
-			void addSteamTurbineGovernor(Real OmRef, Real Pref, Real R, Real T2, Real T3, 
+			void addSteamTurbineGovernor(Real OmRef, Real Pref, Real R, Real T1, Real T2, Real T3, 
 										Real dPmax, Real dPmin, Real Pmax, Real Pmin);
 			void addSteamTurbineGovernor(std::shared_ptr<Signal::SteamTurbineGovernor> steamTurbineGovernor);
 
@@ -108,13 +108,15 @@ namespace Base {
 			void addHydroTurbineGovernor(std::shared_ptr<Signal::HydroTurbineGovernor> hydroTurbineGovernor);
 
 			/// Add governor and turbine
-			//void addGovernor(Real T3, Real T4, Real T5, Real Tc, 
-			//	Real Ts, Real R, Real Pmin, Real Pmax, Real OmRef);
-			//void addGovernor(std::shared_ptr<Signal::TurbineGovernorType1> turbineGovernor);
+			void addGovernor(Real T3, Real T4, Real T5, Real Tc, 
+				Real Ts, Real R, Real Pmin, Real Pmax, Real OmRef);
+			void addGovernor(std::shared_ptr<Signal::TurbineGovernorType1> turbineGovernor);
+			
 			/// Add automatic voltage regulator
 			void addExciter(CPS::Base::ExciterParameters exciterParameters, ExciterType exciterType = ExciterType::DC1Simp);
 			/// Add automatic voltage regulator
 			void addExciter(std::shared_ptr<Base::Exciter> exciter);
+
 			/// Add power system stabilizer
 			void addPSS(Real Kp, Real Kv, Real Kw, Real T1, Real T2, Real T3, Real T4, 
 				Real Vs_max, Real Vs_min, Real Tw);
@@ -287,6 +289,11 @@ namespace Base {
 			Bool mSteam = false;
 			/// Is it a hydro power plant?
 			Bool mHydro = false;
+			// Is it a Type1 power plant?
+			Bool mTurbineGovernorType1=false;
+
+			//Signal Component for previous Governor Turbine
+			std::shared_ptr<Signal::TurbineGovernorType1> mType1TurbineGovernor;
 
 			///Signal component modelling Steam Turbine
 			std::shared_ptr<Signal::SteamTurbine> mSteamTurbine;
@@ -300,8 +307,7 @@ namespace Base {
 			
 			/// Determines if Exciter is activated
 			Bool mHasPSS = false;
-			/// Signal component modelling governor control and steam turbine
-			// std::shared_ptr<Signal::TurbineGovernorType1> mTurbineGovernor;
+
 			/// Signal component modelling voltage regulator and exciter
 			std::shared_ptr<Base::Exciter> mExciter;
 			/// Signal component modelling voltage regulator and exciter
