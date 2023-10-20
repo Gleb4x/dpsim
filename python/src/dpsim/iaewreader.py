@@ -95,7 +95,7 @@ class Reader:
 
         if 'bus_assets' in self.mpc_raw[self.mpc_name]:
             self.mpc_bus_assets_dict=dict(zip(self.mpc_bus_data['bus_i'],self.mpc_raw[self.mpc_name]['bus_assets']))
-            
+
         #### TODO Generator costs ####
     
     def process_mpc_dyn(self):
@@ -177,7 +177,7 @@ class Reader:
             dpsimpy_components.SimNode = getattr(dpsimpy.emt, "SimNode")  
         else:
             raise Exception('ERROR: domain {} is not supported in dpsimpy'.format(self.domain))
-            
+        
         # return values: nodes and components
         self.dpsimpy_busses_dict = {}
         self.dpsimpy_comp_dict = {}
@@ -449,7 +449,8 @@ class Reader:
         #### SG controllers ####
         if (self.domain != Domain.PF):
             # search for avr
-            if (self.mpc_avr_data is not None and int(bus_index) in self.mpc_avr_data['bus'].tolist()):
+            if with_avr:
+                if (self.mpc_avr_data is not None and int(bus_index) in self.mpc_avr_data['bus'].tolist()):
                     try:
                         avr_row_idx = self.mpc_avr_data.index[self.mpc_avr_data['bus'] == int(bus_index)].tolist()[0]
                         exciter = dpsimpy.signal.ExciterDC1Simp("Exciter_Bus" + bus_index, self.log_level)
