@@ -328,13 +328,14 @@ class Reader:
                 # get transformer power and voltages
                 # Matpower: Used to specify branch flow limits. By default these are limits on apparent power with units in MV
                 transf_s = self.mpc_branch_data.at[index,'rateA'] * mw_w 
-                primary_V = tmp_fbus['Vm'][fbus_index-1] * fbus_baseV
-                secondary_V = tmp_tbus['Vm'][tbus_index-1] * tbus_baseV
+                Vn_f = tmp_fbus['Vm'][fbus_index-1] * fbus_baseV
+                Vn_t = tmp_tbus['Vm'][tbus_index-1] * tbus_baseV
 
                 #is there if the second condition in upper if is false: not(fbus_baseV==tbus_baseV)
                 if (branch_ratio==0):
                     branch_ratio=1
-                    
+
+                #TO DO: For transformation of Impedances a ratio with angle shift has to be used!     
                 transf_ratioAbs = branch_ratio * fbus_baseV / tbus_baseV
                 
                 # From MATPOWER-manual taps at “from” bus,  impedance at “to” bus,  i.e.  ifr=x=b= 0,tap=|Vf|/|Vt|
@@ -342,7 +343,7 @@ class Reader:
                 transf_baseZ = tbus_baseV * tbus_baseV / (self.mpc_base_power_MVA)
 
                 # DPsim convention: impedance values must be referred to high voltage side (and base voltage set to higher voltage)
-                if primary_V > secondary_V:
+                if Vn_f > Vn_t:
                     # impedances are referred to LV side --> change side 
                     transf_baseV = fbus_baseV
                     transf_r = self.mpc_branch_data.at[index,'r'] * (transf_ratioAbs**2) * transf_baseZ
@@ -350,8 +351,8 @@ class Reader:
                     transf_l = transf_x / self.mpc_omega   
                 else:
                     transf_baseV = tbus_baseV
-                    transf_r = self.mpc_branch_data.at[index,'r']* transf_baseZ * (branch_ratio**2)
-                    transf_x = self.mpc_branch_data.at[index,'x']* transf_baseZ * (branch_ratio**2)
+                    transf_r = self.mpc_branch_data.at[index,'r']* transf_baseZ
+                    transf_x = self.mpc_branch_data.at[index,'x']* transf_baseZ 
                     transf_l = transf_x / self.mpc_omega
                 
                 # create dpsim component
@@ -446,10 +447,11 @@ class Reader:
         #### SG controllers ####
         if (self.domain != Domain.PF):
             # search for avr
-            if (self.mpc_avr_data is not None and int(bus_index) in self.mpc_avr_data['bus'].tolist()):
+            if with_pss:
+                if (self.mpc_avr_data is not None and int(bus_index) in self.mpc_avr_data['bus'].tolist()):
                     try:
                         avr_row_idx = self.mpc_avr_data.index[self.mpc_avr_data['bus'] == int(bus_index)].tolist()[0]
-                        exciter = dpsimpy.Signal.ExciterDC1Simp()
+                        exciter = dpsimpy.signal.ExciterDC1Simp()
                         exciter_parameters = dpsimpy.signal.ExciterDC1SimpParameters()
                         exciter_parameters.Ka = self.mpc_avr_data['Ka'][avr_row_idx]
                         exciter_parameters.Ta = self.mpc_avr_data['Ta'][avr_row_idx]
