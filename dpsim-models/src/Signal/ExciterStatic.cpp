@@ -67,7 +67,7 @@ void ExciterStatic::initialize(Real Vh_init, Real Ef_init) {
 	SPDLOG_LOGGER_INFO(mSLog, 
 		"\nCalculated set poit and auxilary state variable, ExciterStatic:"
 		"\nVref : {:e}"
-		"\nXb : {:e}",
+		"\nXb : {:e}"
 		"\nVin=Vref-Vh : {:e}",
 		mVref, mXb, mVin);
 	mSLog->flush();

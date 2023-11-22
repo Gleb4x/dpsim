@@ -115,7 +115,7 @@ class Reader:
         self.mpc_avr_data = None
         if 'exc' in self.mpc_raw_dyn[self.mpc_dyn_name]:
             mpc_avr_data = self.mpc_raw_dyn[self.mpc_dyn_name]['exc']
-            avr_data_header = ["bus", "Type", "Ka", "Te", "Ta", "Tb","U_max", "U_min", "Kbc"]
+            avr_data_header = ["bus", "Type", "Ka", "Te", "Ta", "Tb","U_min", "U_max", "Kbc"]
             self.mpc_avr_data = pd.DataFrame(np.matrix(mpc_avr_data), columns = avr_data_header)
             print(self.mpc_avr_data)
             # scipy.io.loadmat loads all matrix entries as double. Convert specific columns back to int
