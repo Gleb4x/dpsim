@@ -106,7 +106,6 @@ class Reader:
             
             dyn_gen_data_header = ["bus","model","BaseS","H","D","Xd","Xq","Xd_t","Xq_t","Xd_s","Xq_s","Td0_t","Tq0_t","Td0_s","Tq0_s", "Ra"]
             self.mpc_dyn_gen_data = pd.DataFrame(mpc_dyn_gen_data, columns = dyn_gen_data_header)
-            print(self.mpc_dyn_gen_data)
             # scipy.io.loadmat loads all matrix entries as double. Convert specific columns back to int
             self.mpc_dyn_gen_data['bus'] = self.mpc_dyn_gen_data['bus'].astype(int)
             self.mpc_dyn_gen_data['model'] = self.mpc_dyn_gen_data['model'].astype(int)
@@ -117,7 +116,6 @@ class Reader:
             mpc_avr_data = self.mpc_raw_dyn[self.mpc_dyn_name]['exc']
             avr_data_header = ["bus", "Type", "Ka", "Te", "Ta", "Tb","U_min", "U_max", "Kbc"]
             self.mpc_avr_data = pd.DataFrame(np.matrix(mpc_avr_data), columns = avr_data_header)
-            print(self.mpc_avr_data)
             # scipy.io.loadmat loads all matrix entries as double. Convert specific columns back to int
             self.mpc_avr_data['bus'] = self.mpc_avr_data['bus'].astype(int)
             self.mpc_avr_data['Type'] = self.mpc_avr_data['Type'].astype(int)
@@ -128,7 +126,6 @@ class Reader:
             mpc_pss_data = self.mpc_raw_dyn[self.mpc_dyn_name]['pss']
             pss_data_header = ["bus", "Type", "Tw", "T1", "T2", "T3", "T4", "Ks", "U_smin", "U_smax"]
             self.mpc_pss_data = pd.DataFrame(np.matrix(mpc_pss_data), columns = pss_data_header)
-            print(self.mpc_pss_data)
            
            # scipy.io.loadmat loads all matrix entries as double. Convert specific columns back to int
             self.mpc_pss_data['bus'] = self.mpc_pss_data['bus'].astype(int)
@@ -140,7 +137,6 @@ class Reader:
             mpc_tg_data = self.mpc_raw_dyn[self.mpc_dyn_name]['gov']
             tg_data_header = ["bus", "Type", "K", "T1", "T2", "T3", "Pup", "Pdown", "Pmax", "Pmin"]
             self.mpc_tg_data = pd.DataFrame(np.matrix(mpc_tg_data), columns = tg_data_header)
-            print(self.mpc_tg_data)
             # scipy.io.loadmat loads all matrix entries as double. Convert specific columns back to int
             self.mpc_tg_data['bus'] = self.mpc_tg_data['bus'].astype(int)
             self.mpc_tg_data['Type'] = self.mpc_tg_data['Type'].astype(int)
@@ -355,9 +351,9 @@ class Reader:
                     transf_x = self.mpc_branch_data.at[index,'x'] * (transf_ratioAbs**2) * transf_baseZ
                     transf_l = transf_x / self.mpc_omega   
                 else:
-                    transf_baseV = tbus_baseV/branch_ratio
-                    transf_r = self.mpc_branch_data.at[index,'r']* transf_baseZ
-                    transf_x = self.mpc_branch_data.at[index,'x']* transf_baseZ 
+                    transf_baseV = tbus_baseV / branch_ratio
+                    transf_r = self.mpc_branch_data.at[index,'r']* transf_baseZ / (branch_ratio**2)
+                    transf_x = self.mpc_branch_data.at[index,'x']* transf_baseZ / (branch_ratio**2)
                     transf_l = transf_x / self.mpc_omega
                 
                 # create dpsim component
@@ -501,9 +497,11 @@ class Reader:
                         governor = dpsimpy.signal.SteamTurbineGovernor("TG_Bus" + bus_index, self.log_level)
                         governor_parameters = dpsimpy.signal.SteamGorvernorParameters()
                         governor_parameters.OmRef = 1
-                        governor_parameters.R = 1/self.mpc_tg_data['K'][tg_row_idx]
-                        governor_parameters.T1 = self.mpc_tg_data['T1'][tg_row_idx]
-                        governor_parameters.T2 = self.mpc_tg_data['T2'][tg_row_idx]
+                        governor_parameters.R = 1 / self.mpc_tg_data['K'][tg_row_idx]
+                        governor_parameters.R = 0.02
+                        governor_parameters.T1 = self.mpc_tg_data['T2'][tg_row_idx]
+                        governor_parameters.T1 = 0
+                        governor_parameters.T2 = self.mpc_tg_data['T1'][tg_row_idx]
                         governor_parameters.T3 = self.mpc_tg_data['T3'][tg_row_idx]
                         governor_parameters.dPmax = self.mpc_tg_data['Pup'][tg_row_idx]
                         governor_parameters.dPmin = self.mpc_tg_data['Pdown'][tg_row_idx]
