@@ -45,6 +45,10 @@ namespace Signal {
 		Real mEfd=0;
 		/// Exciter output at step k+1
 		Real mEfd_next=0;
+		//Variable for integrator Windup (input of the limiter)
+		Real mEfd_lim_in=0;
+		//
+		Real mEfd_lim_in_next=0;
 		/// Auxilary state variable from partial fraction decompostion (1+sT_A)/(1+sT_B) at step k
 		Real mXb=0;
 		/// Auxilary state variable from partial fraction decompostion (1+sT_A)/(1+sT_B) at step k+1

@@ -72,12 +72,16 @@ namespace Signal {
             Real mP1;
             //
             Real mP;
+            //
+            Real mPlim_in;
     
             // ### Variables at time step k+1 ###
             // The outpur of the PT1 with limiters at k+1 (Governor output)
             Real mPgv_next;
             //
             Real mP1_next;
+            //
+            Real mPlim_in_next;
             
         public:
             ///
