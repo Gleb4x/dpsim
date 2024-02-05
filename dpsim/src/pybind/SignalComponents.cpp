@@ -177,4 +177,19 @@ void addSignalComponents(py::module_ mSignal) {
         .def_readwrite("Cf", &CPS::Signal::VSIControlType2Parameters::Cf)
         .def_readwrite("Lf", &CPS::Signal::VSIControlType2Parameters::Lf)
         .def_readwrite("tau", &CPS::Signal::VSIControlType2Parameters::tau);
+
+    // Converter DC Link Power Source 
+
+    py::class_<CPS::Signal::DCLinkSource, std::shared_ptr<CPS::Signal::DCLinkSource>>(mSignal, "DCLinkSource", py::multiple_inheritance())
+        .def(py::init<std::string, CPS::Logger::Level>(), "name"_a, "loglevel"_a = CPS::Logger::Level::off)
+        .def("set_parameters", &CPS::Signal::DCLinkSource::setParameters, "parameters"_a);
+
+    py::class_<CPS::Signal::DCLinkSourceParameters, std::shared_ptr<CPS::Signal::DCLinkSourceParameters>>(mSignal, "DCLinkSourceParameters", py::multiple_inheritance())
+        .def(py::init())
+        .def_readwrite("Kpdc", &CPS::Signal::DCLinkSourceParameters::Kpdc)
+        .def_readwrite("Kidc", &CPS::Signal::DCLinkSourceParameters::Kidc)
+        .def_readwrite("Cdc", &CPS::Signal::DCLinkSourceParameters::Cdc)
+        .def_readwrite("Vdcnom", &CPS::Signal::DCLinkSourceParameters::Vdcnom);
+
 }
+

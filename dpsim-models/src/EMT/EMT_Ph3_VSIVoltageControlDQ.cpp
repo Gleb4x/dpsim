@@ -69,11 +69,11 @@ void EMT::Ph3::VSIVoltageControlDQ::connectSubComponents() {
 
 void EMT::Ph3::VSIVoltageControlDQ::initializeFromNodesAndTerminals(Real frequency) {
 	// terminal powers in consumer system -> convert to generator system
-	**mPower = -terminal(0)->singlePower();
+	**mPowerPCC = -terminal(0)->singlePower();
 
 	// set initial interface quantities --> Current flowing into the inverter is positive
 	Complex intfVoltageComplex =  initialSingleVoltage(0);
-	Complex intfCurrentComplex = std::conj(**mPower / intfVoltageComplex);
+	Complex intfCurrentComplex = std::conj(**mPowerPCC / intfVoltageComplex);
 	**mIntfVoltage = Math::singlePhaseVariableToThreePhase(RMS3PH_TO_PEAK1PH * intfVoltageComplex).real();
 	**mIntfCurrent = Math::singlePhaseVariableToThreePhase(RMS3PH_TO_PEAK1PH * intfCurrentComplex).real();
 	
@@ -109,6 +109,11 @@ void EMT::Ph3::VSIVoltageControlDQ::mnaParentInitialize(Real omega, Real timeSte
 	mTimeStep = timeStep;
 	if (mWithControl)
 		mVSIController->initialize(**mSourceValue_dq, **mVcap_dq, **mIfilter_dq, mTimeStep, mModelAsCurrentSource);
+	if(mWithDCLink){
+		//Calculate power for from the power source in steady state and initialize DC Link
+		Real Psource_0= (**mSourceValue_dq).real() * (**mIfilter_dq).real() + (**mSourceValue_dq).imag() * (**mIfilter_dq).imag();
+		mDCLink-> initialize(Psource_0, mTimeStep);
+		}
 }
 
 void EMT::Ph3::VSIVoltageControlDQ::mnaParentAddPreStepDependencies(AttributeBase::List &prevStepDependencies, AttributeBase::List &attributeDependencies, AttributeBase::List &modifiedAttributes) {
@@ -167,10 +172,11 @@ void EMT::Ph3::VSIVoltageControlDQ::mnaParentPostStep(Real time, Int timeStepCou
 	mnaCompUpdateCurrent(**leftVector);
 	mnaCompUpdateVoltage(**leftVector);
 	updatePower();
+	updateDCLink();
 }
 
 void EMT::Ph3::VSIVoltageControlDQ::mnaCompUpdateCurrent(const Matrix& leftvector) {
-	**mIntfCurrent = mSubCapacitorF->mIntfCurrent->get() + mSubFilterRL->mIntfCurrent->get();
+	**mIntfCurrent = mSubFilterRL->mIntfCurrent->get() - mSubCapacitorF->mIntfCurrent->get();
 }
 
 void EMT::Ph3::VSIVoltageControlDQ::mnaCompUpdateVoltage(const Matrix& leftVector) {
@@ -182,8 +188,14 @@ void EMT::Ph3::VSIVoltageControlDQ::mnaCompUpdateVoltage(const Matrix& leftVecto
 void EMT::Ph3::VSIVoltageControlDQ::updatePower() {
 	Complex intfVoltageDQ = parkTransformPowerInvariant(**mThetaInv, **mIntfVoltage);
 	Complex intfCurrentDQ = parkTransformPowerInvariant(**mThetaInv, **mIntfCurrent);
-	**mPower = Complex(intfVoltageDQ.real() * intfCurrentDQ.real() + intfVoltageDQ.imag() * intfCurrentDQ.imag(),	
+	**mPowerPCC = Complex(intfVoltageDQ.real() * intfCurrentDQ.real() + intfVoltageDQ.imag() * intfCurrentDQ.imag(),	
 					   intfVoltageDQ.imag() * intfCurrentDQ.real() - intfVoltageDQ.real() * intfCurrentDQ.imag());
+}
+
+void EMT::Ph3::VSIVoltageControlDQ::updateDCLink() {
+	**mIfilter_dq = parkTransformPowerInvariant(**mThetaInv, **mSubFilterRL->mIntfCurrent);
+	**mPowerSource=(**mSourceValue_dq).real() * (**mIfilter_dq).real() + (**mSourceValue_dq).imag() * (**mIfilter_dq).imag();
+	**mV_DC = mDCLink-> step(**mPowerSource);
 }
 
 Complex EMT::Ph3::VSIVoltageControlDQ::parkTransformPowerInvariant(Real theta, const Matrix &fabc) {

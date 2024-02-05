@@ -74,6 +74,8 @@ namespace Ph1 {
 		void connectSubComponents();
 		///
 		void updatePower();
+		/// 
+		void updateDCLink();
 	};
 }
 }

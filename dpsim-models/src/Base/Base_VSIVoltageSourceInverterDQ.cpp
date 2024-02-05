@@ -65,6 +65,12 @@ void Base::VSIVoltageSourceInverterDQ<VarType>::addVSIController(std::shared_ptr
 }
 
 template <typename VarType>
+void Base::VSIVoltageSourceInverterDQ<VarType>::addDCLink(std::shared_ptr<Signal::DCLinkSource> DCLinkSource) {
+	mDCLink = DCLinkSource;
+	mWithDCLink = true;
+}
+
+template <typename VarType>
 void Base::VSIVoltageSourceInverterDQ<VarType>::initializeFilterVariables(
 	const Complex & interfaceVoltage, const Complex & interfaceCurrent,
 	typename SimNode<VarType>::List virtualNodesList) {

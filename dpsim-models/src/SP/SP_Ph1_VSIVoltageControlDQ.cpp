@@ -64,11 +64,11 @@ void SP::Ph1::VSIVoltageControlDQ::connectSubComponents() {
 
 void SP::Ph1::VSIVoltageControlDQ::initializeFromNodesAndTerminals(Real frequency) {
 	// terminal powers in consumer system -> convert to generator system
-	**mPower = -terminal(0)->singlePower();
+	**mPowerPCC = -terminal(0)->singlePower();
 
 	// set initial interface quantities --> Current flowing into the inverter is positive
 	(**mIntfVoltage)(0, 0) = initialSingleVoltage(0);
-	(**mIntfCurrent)(0, 0) = std::conj(**mPower / (**mIntfVoltage)(0,0));
+	(**mIntfCurrent)(0, 0) = std::conj(**mPowerPCC / (**mIntfVoltage)(0,0));
 
 	// initialize filter variables and set initial voltage of virtual nodes
 	initializeFilterVariables((**mIntfVoltage)(0, 0), (**mIntfCurrent)(0, 0), mVirtualNodes);
@@ -167,5 +167,5 @@ void SP::Ph1::VSIVoltageControlDQ::mnaCompUpdateVoltage(const Matrix& leftVector
 }
 
 void SP::Ph1::VSIVoltageControlDQ::updatePower() {
-	**mPower = (**mIntfVoltage)(0,0) * std::conj((**mIntfCurrent)(0,0));
+	**mPowerPCC = (**mIntfVoltage)(0,0) * std::conj((**mIntfCurrent)(0,0));
 }

@@ -12,6 +12,7 @@
 #include <dpsim-models/Logger.h>
 #include <dpsim-models/AttributeList.h>
 #include <dpsim-models/Base/Base_VSIControlDQ.h>
+#include <dpsim-models/Signal/DCLinkSource.h>
 #include <dpsim-models/SimNode.h>
 
 namespace CPS {
@@ -73,16 +74,26 @@ namespace Base {
 		/// Measured current in dq reference frame
 		const Attribute<Complex>::Ptr mIfilter_dq;
 		/// inverter terminal active power
-		const Attribute<Complex>::Ptr mPower;
+		const Attribute<Complex>::Ptr mPowerPCC;
+		/// inverter power source  active power
+		const Attribute<Real>::Ptr mPowerSource;
+		/// DC Link Voltage
+		const Attribute<Real>::Ptr mV_DC;
 
 		// ### Voltage Controller Variables ###
 
 		// #### Controllers ####
 		/// Determines if VSI control is activated
 		Bool mWithControl = true;
+
+		/// Determines if DC Linkl is activated
+		Bool mWithDCLink=true;
 			
 		/// Signal component modelling voltage regulator and exciter
 		std::shared_ptr<Base::VSIControlDQ> mVSIController;		
+
+		///Signal component modelling DC Link (For example a DC Capacior and regulated current source)
+		std::shared_ptr<Signal::DCLinkSource> mDCLink;	
 
     public:
 		explicit VSIVoltageSourceInverterDQ(Logger::Log Log, CPS::AttributeList::Ptr attributeList,
@@ -97,7 +108,9 @@ namespace Base {
 			mSourceValue_dq(attributeList->create<Complex>("SourceValue_dq", Complex(0,0))),
 			mVcap_dq(attributeList->create<Complex>("Vcap_dq", 0)),
 			mIfilter_dq(attributeList->create<Complex>("Ifilter_dq", 0)),
-			mPower(attributeList->create<Complex>("Power", 0)){ };
+			mPowerPCC(attributeList->create<Complex>("PowerPCC", 0)),
+			mPowerSource(attributeList->create<Real>("PowerSource", 0)),
+			mV_DC(attributeList->create<Real>("V_DC", 0)){ };
 
 		/// Setter for general parameters of inverter
 		void setParameters(Real sysOmega, Real VdRef, Real VqRef);
@@ -107,6 +120,9 @@ namespace Base {
 		// ### Controllers ###
 		/// Add VSI Controller
 		void addVSIController(std::shared_ptr<Base::VSIControlDQ> VSIController);
+
+		//Add DC Link
+		void addDCLink(std::shared_ptr<Signal::DCLinkSource> DCLinkSource);
 
 	protected:
 		///

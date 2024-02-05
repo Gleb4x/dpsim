@@ -74,6 +74,8 @@ namespace Ph3 {
 		void connectSubComponents();
 		///
 		void updatePower();
+		/// 
+		void updateDCLink();
 		
 		// #### Mathematical Matrix Transforms ####
 		///

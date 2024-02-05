@@ -65,11 +65,11 @@ void DP::Ph1::VSIVoltageControlDQ::connectSubComponents() {
 
 void DP::Ph1::VSIVoltageControlDQ::initializeFromNodesAndTerminals(Real frequency) {
 	// terminal powers in consumer system -> convert to generator system
-	**mPower = -terminal(0)->singlePower();
+	**mPowerPCC = -terminal(0)->singlePower();
 
 	// set initial interface quantities --> Current flowing into the inverter is positive
 	(**mIntfVoltage)(0, 0) = initialSingleVoltage(0);
-	(**mIntfCurrent)(0, 0) = std::conj(**mPower / (**mIntfVoltage)(0,0));
+	(**mIntfCurrent)(0, 0) = std::conj(**mPowerPCC / (**mIntfVoltage)(0,0));
 
 	// initialize filter variables and set initial voltage of virtual nodes
 	initializeFilterVariables((**mIntfVoltage)(0, 0), (**mIntfCurrent)(0, 0), mVirtualNodes);
@@ -103,6 +103,11 @@ void DP::Ph1::VSIVoltageControlDQ::mnaParentInitialize(Real omega, Real timeStep
 	mTimeStep = timeStep;
 	if (mWithControl)
 		mVSIController->initialize(**mSourceValue_dq, **mVcap_dq, **mIfilter_dq, mTimeStep, mModelAsCurrentSource);
+	if(mWithDCLink){
+		//Calculate power for from the power source in steady state and initialize DC Link
+		Real Psource_0= (**mSourceValue_dq).real() * (**mIfilter_dq).real() + (**mSourceValue_dq).imag() * (**mIfilter_dq).imag();
+		mDCLink-> initialize(Psource_0, mTimeStep);
+		}
 }
 
 void DP::Ph1::VSIVoltageControlDQ::mnaParentAddPreStepDependencies(AttributeBase::List &prevStepDependencies, AttributeBase::List &attributeDependencies, AttributeBase::List &modifiedAttributes) {
@@ -158,16 +163,23 @@ void DP::Ph1::VSIVoltageControlDQ::mnaParentPostStep(Real time, Int timeStepCoun
 	mnaCompUpdateCurrent(**leftVector);
 	mnaCompUpdateVoltage(**leftVector);
 	updatePower();
+	updateDCLink();
 }
 
 void DP::Ph1::VSIVoltageControlDQ::mnaCompUpdateCurrent(const Matrix& leftvector) {
-	**mIntfCurrent = mSubCapacitorF->mIntfCurrent->get() + mSubFilterRL->mIntfCurrent->get();
+	**mIntfCurrent = mSubFilterRL->mIntfCurrent->get() - mSubCapacitorF->mIntfCurrent->get();
 }
 
 void DP::Ph1::VSIVoltageControlDQ::mnaCompUpdateVoltage(const Matrix& leftVector) {
 	(**mIntfVoltage)(0,0) = Math::complexFromVectorElement(leftVector, matrixNodeIndex(0));
 }
 
+//calculates power at AC PCC Terminal
 void DP::Ph1::VSIVoltageControlDQ::updatePower() {
-	**mPower = (**mIntfVoltage)(0,0) * std::conj((**mIntfCurrent)(0,0));
+	**mPowerPCC = (**mIntfVoltage)(0,0) * std::conj((**mIntfCurrent)(0,0));
+}
+
+void DP::Ph1::VSIVoltageControlDQ::updateDCLink() {
+	**mPowerSource= ((**mSourceValue)(0,0) * std::conj((**mSubFilterRL->mIntfCurrent)(0, 0))).real();
+	**mV_DC = mDCLink-> step(**mPowerSource);
 }
