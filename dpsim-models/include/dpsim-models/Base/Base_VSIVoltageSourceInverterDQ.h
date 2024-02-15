@@ -77,8 +77,6 @@ namespace Base {
 		const Attribute<Complex>::Ptr mPowerPCC;
 		/// inverter power source  active power
 		const Attribute<Real>::Ptr mPowerSource;
-		/// DC Link Voltage
-		const Attribute<Real>::Ptr mV_DC;
 
 		// ### Voltage Controller Variables ###
 
@@ -109,8 +107,7 @@ namespace Base {
 			mVcap_dq(attributeList->create<Complex>("Vcap_dq", 0)),
 			mIfilter_dq(attributeList->create<Complex>("Ifilter_dq", 0)),
 			mPowerPCC(attributeList->create<Complex>("PowerPCC", 0)),
-			mPowerSource(attributeList->create<Real>("PowerSource", 0)),
-			mV_DC(attributeList->create<Real>("V_DC", 0)){ };
+			mPowerSource(attributeList->create<Real>("PowerSource", 0)){ };
 
 		/// Setter for general parameters of inverter
 		void setParameters(Real sysOmega, Real VdRef, Real VqRef);

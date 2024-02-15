@@ -4,8 +4,11 @@
 using namespace CPS;
 using namespace CPS::Signal;
 
-Signal::DCLinkSource::DCLinkSource(const String & name, CPS::Logger::Level logLevel) 
-	: SimSignalComp(name, name, logLevel) { }
+Signal::DCLinkSource::DCLinkSource(const String & name, CPS::Logger::Level logLevel):
+    SimSignalComp(name, name, logLevel),
+    mIdc_s(mAttributes->create<Real>("Idc_s", 0)),
+	mVdc(mAttributes->create<Real>("V_dc", 0)),
+	mP_inv(mAttributes->create<Real>("P_inv", 0)) { }
 
 void DCLinkSource::setParameters(std::shared_ptr<DCLinkSourceParameters> parameters) {
     if (auto params = std::dynamic_pointer_cast<Signal::DCLinkSourceParameters>(parameters)){
@@ -30,35 +33,36 @@ void DCLinkSource::initialize(Real Pdc, Real timeStep) {
     mTimeStep=timeStep;
 
     //steady state values
-    mVdc = mParameters->Vdcnom;
-    mVdc_next=mVdc;
+    **mVdc = mParameters->Vdcnom;
+    mVdc_next=**mVdc;
 
-    mIdc_inv = Pdc/mVdc;
+    **mP_inv=Pdc;
+    mIdc_inv = Pdc / **mVdc;
 
     mX=mIdc_inv;
     mX_next=mIdc_inv;
 
-    mIdc_s=mIdc_inv;
-    mIdc_s_next=mIdc_s;
+    **mIdc_s=mIdc_inv;
+    mIdc_s_next=**mIdc_s;
 
     SPDLOG_LOGGER_INFO(mSLog, "DC Link initial values: \n"
 		"\nUdc: {:f}"
 		"\nIdc_inv: {:f}"
 		"\nIdc_s: {:f}",
-		mVdc, mIdc_inv, mIdc_s);
+		**mVdc, mIdc_inv, **mIdc_s);
 }
 
-Real DCLinkSource::step(Real Pdc) {
+void DCLinkSource::step(Real Pdc) {
 
-    mVdc=mVdc_next;
+    **mP_inv=Pdc;
+    **mVdc=mVdc_next;
     mX=mX_next;
-    mIdc_s= (mParameters->Vdcnom-mVdc)*mParameters->Kpdc+mX;
-    mIdc_inv=Pdc/mVdc;
-    
 
-    mVdc_next=mVdc + mTimeStep/mParameters->Cdc *(mIdc_s - mIdc_inv);
+    **mIdc_s= (mParameters->Vdcnom-**mVdc)*mParameters->Kpdc+mX;
+    mIdc_inv=Pdc / **mVdc;
 
-    mX_next=mX + mTimeStep*mParameters->Kidc *(mParameters->Vdcnom - mVdc);
+    mVdc_next=**mVdc + mTimeStep/mParameters->Cdc *(**mIdc_s - mIdc_inv);
 
-    return mVdc;
+    mX_next=mX + mTimeStep*mParameters->Kidc *(mParameters->Vdcnom - **mVdc);
+
 }

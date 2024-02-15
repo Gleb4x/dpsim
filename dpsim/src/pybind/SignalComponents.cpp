@@ -180,7 +180,7 @@ void addSignalComponents(py::module_ mSignal) {
 
     // Converter DC Link Power Source 
 
-    py::class_<CPS::Signal::DCLinkSource, std::shared_ptr<CPS::Signal::DCLinkSource>>(mSignal, "DCLinkSource", py::multiple_inheritance())
+    py::class_<CPS::Signal::DCLinkSource, std::shared_ptr<CPS::Signal::DCLinkSource>, CPS::SimSignalComp>(mSignal, "DCLinkSource", py::multiple_inheritance())
         .def(py::init<std::string, CPS::Logger::Level>(), "name"_a, "loglevel"_a = CPS::Logger::Level::off)
         .def("set_parameters", &CPS::Signal::DCLinkSource::setParameters, "parameters"_a);
 

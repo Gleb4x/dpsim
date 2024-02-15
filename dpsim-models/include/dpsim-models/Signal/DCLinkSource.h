@@ -29,27 +29,29 @@ namespace Signal {
 		public SharedFactory<DCLinkSource> {
 
 	protected:	
-        /// DC Link Source Parameters
-		std::shared_ptr<DCLinkSourceParameters> mParameters;
 
-        /// DC Link 
-        /// Power of low pressure stage at time step k+1
-		Real mVdc;
-		Real mVdc_next;
+		const Attribute<Real>::Ptr mIdc_s;
+		const Attribute<Real>::Ptr mVdc;
+		const Attribute<Real>::Ptr mP_inv;
 
-   		Real mIdc_inv;
-
-    	Real mIdc_s;
 		Real mIdc_s_next;
+		Real mIdc_inv;
+		Real mVdc_next;
 
 		Real mX;
 		Real mX_next;
 		
 		Real mTimeStep;
+		/// DC Link Source Parameters
+		std::shared_ptr<DCLinkSourceParameters> mParameters;
 
     public:
         ///
-        explicit DCLinkSource(const String & name) : SimSignalComp(name, name) { }
+        explicit DCLinkSource(const String & name) : 
+		 SimSignalComp(name, name),
+		 mIdc_s(mAttributes->create<Real>("Idc_s", 0)),
+		 mVdc(mAttributes->create<Real>("V_dc", 0)),
+		 mP_inv(mAttributes->create<Real>("P_inv", 0)) { };
 
 	    /// Constructor with log level
 	    DCLinkSource(const String & name, CPS::Logger::Level logLevel);
@@ -61,7 +63,7 @@ namespace Signal {
 	    void initialize(Real Pdc, Real timeStep);
 
 	    /// Performs a step to update all state variables and the output
-	    Real step(Real Pdc);
+	    void step(Real Pdc);
     };
 
 }

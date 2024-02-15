@@ -195,7 +195,7 @@ void EMT::Ph3::VSIVoltageControlDQ::updatePower() {
 void EMT::Ph3::VSIVoltageControlDQ::updateDCLink() {
 	**mIfilter_dq = parkTransformPowerInvariant(**mThetaInv, **mSubFilterRL->mIntfCurrent);
 	**mPowerSource=(**mSourceValue_dq).real() * (**mIfilter_dq).real() + (**mSourceValue_dq).imag() * (**mIfilter_dq).imag();
-	**mV_DC = mDCLink-> step(**mPowerSource);
+	mDCLink-> step(**mPowerSource);
 }
 
 Complex EMT::Ph3::VSIVoltageControlDQ::parkTransformPowerInvariant(Real theta, const Matrix &fabc) {
