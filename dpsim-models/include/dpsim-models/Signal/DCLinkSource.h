@@ -28,7 +28,7 @@ namespace Signal {
 		public SimSignalComp,
 		public SharedFactory<DCLinkSource> {
 
-    private:
+	protected:	
         /// DC Link Source Parameters
 		std::shared_ptr<DCLinkSourceParameters> mParameters;
 

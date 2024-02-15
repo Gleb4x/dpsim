@@ -180,6 +180,7 @@ void DP::Ph1::VSIVoltageControlDQ::updatePower() {
 }
 
 void DP::Ph1::VSIVoltageControlDQ::updateDCLink() {
-	**mPowerSource= ((**mSourceValue)(0,0) * std::conj((**mSubFilterRL->mIntfCurrent)(0, 0))).real();
+	//**mPowerSource= ((**mSourceValue)(0,0) * std::conj((**mSubFilterRL->mIntfCurrent)(0, 0))).real();
+	**mPowerSource= (**mSourceValue_dq).real() * (**mIfilter_dq).real() + (**mSourceValue_dq).imag() * (**mIfilter_dq).imag();
 	**mV_DC = mDCLink-> step(**mPowerSource);
 }
